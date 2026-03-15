@@ -18,7 +18,6 @@ RUN pip install --no-cache-dir --default-timeout=1000 -r requirements.txt
 COPY apps/api/*.py ./apps/api/
 COPY apps/api/routers ./apps/api/routers
 COPY apps/api/models/*.py ./apps/api/models/
-COPY apps/api/core ./apps/api/core
 COPY apps/api/data ./apps/api/data
 COPY apps/api/scripts ./apps/api/scripts
 
