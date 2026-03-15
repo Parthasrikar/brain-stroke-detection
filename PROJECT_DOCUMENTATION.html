@@ -1,0 +1,191 @@
+
+    <html>
+    <head>
+        <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; color: #333; }
+            h1 { color: #2c3e50; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; }
+            h2 { color: #e67e22; margin-top: 30px; }
+            code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; font-family: monospace; }
+            pre { background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; }
+            blockquote { border-left: 4px solid #3498db; padding-left: 15px; color: #555; }
+            table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; }
+        </style>
+    </head>
+    <body>
+    <h1>NeuroScan AI - Brain Stroke Detection &amp; Rehabilitation Platform</h1>
+<h2>1. Project Overview</h2>
+<p>NeuroScan AI is a comprehensive medical support system designed to assist in the early detection and rehabilitation of brain strokes. It combines Deep Learning (CNNs), Generative AI (Google Gemini), and a modern Web Application to provide end-to-end support for patients and doctors.</p>
+<p><strong>Key capabilities:</strong>
+- <strong>Automated Diagnosis:</strong> Detects if a CT Scan is Normal or Stroke-affected.
+- <strong>Stroke Typing:</strong> If a stroke is found, it classifies it as Ischemic (Clot) or Haemorrhagic (Bleed).
+- <strong>Personalized Rehabilitation:</strong> Uses Generative AI to create custom recovery plans.
+- <strong>Medical History:</strong> Tracks patient progress and past scan results.
+- <strong>Context-Aware Chatbot:</strong> A smart assistant that knows the patient's history and offers 24/7 support.</p>
+<hr />
+<h2>2. Dataset &amp; Preprocessing</h2>
+<h3>2.1 The Dataset</h3>
+<p>The model was built using the <strong>Brain Stroke CT Image Dataset</strong>, structured into three classes:
+- <strong>Normal:</strong> Healthy brain scans.
+- <strong>Ischemic:</strong> Scans showing blockage/clots.
+- <strong>Haemorrhagic:</strong> Scans showing bleeding.</p>
+<h3>2.2 Data Pipeline</h3>
+<p>We implemented a robust pipeline to prepare data for our two-stage model architecture:</p>
+<p><strong>Step 1: Data Gathering (<code>scripts/prepare_datasets.py</code>)</strong> 
+- Scans directory recursively for <code>.jpg</code> and <code>.png</code> files.
+- <strong>Dataset A Creation:</strong> Merges 'Ischemic' and 'Haemorrhagic' into a single 'Stroke' class (Label 1) vs 'Normal' (Label 0).
+- <strong>Dataset B Creation:</strong> Filters only 'Stroke' images. Maps 'Ischemic' (0) vs 'Haemorrhagic' (1).
+- <strong>Splitting:</strong> Data is shuffled and split into Train (80%), Val (10%), Test (10%).
+- <strong>Output:</strong> Generates <code>dataset_a.csv</code> and <code>dataset_b.csv</code> for reproducible training.</p>
+<p><strong>Step 2: Preprocessing</strong>
+- <strong>Resizing:</strong> All images are resized to <strong>224x224</strong> pixels.
+- <strong>Normalization:</strong> Pixel values normalized to range <code>[0, 1]</code>.
+- <strong>Augmentation:</strong> To prevent overfitting, training applies:
+  - Rotation (20°)
+  - Width/Height Shift (20%)
+  - Horizontal Flip</p>
+<hr />
+<h2>3. Machine Learning Architecture</h2>
+<p>We purposefully chose a <strong>Hierarchical (Two-Stage) Approach</strong> to maximize accuracy.</p>
+<h3>3.1 Model A (Screening Model)</h3>
+<ul>
+<li><strong>Goal:</strong> Filter out normal patients first to reduce false alarms.</li>
+<li><strong>Architecture:</strong> <strong>ResNet50</strong> (Transfer Learning)</li>
+<li><strong>Base:</strong> Pre-trained on ImageNet (weights frozen).</li>
+<li><strong>Head:</strong> GlobalAveragePooling -&gt; Dense(256, ReLU) -&gt; Dropout(0.5) -&gt; Dense(1, Sigmoid).</li>
+<li><strong>Performance:</strong> High sensitivity for detecting anomalies.</li>
+</ul>
+<h3>3.2 Model B (Classification Model)</h3>
+<ul>
+<li><strong>Goal:</strong> Determine the specific type of stroke for critical treatment decisions (e.g., blood thinners kill haemorrhagic patients).</li>
+<li><strong>Architecture:</strong> <strong>ResNet50</strong> (Same backbone for consistency).</li>
+<li><strong>Logic:</strong> Only runs if Model A predicts "Stroke" with &gt;50% confidence.</li>
+</ul>
+<h3>3.3 The Engine (<code>ml_engine.py</code>)</h3>
+<ul>
+<li><strong>Heuristic Validation:</strong> Includes an <code>is_brain_ct()</code> check to reject invalid uploads (e.g., cat photos).</li>
+<li><strong>Inference Flow:</strong> </li>
+<li>Image -&gt; Preprocess -&gt; Model A.</li>
+<li>If Normal -&gt; Return "Healthy".</li>
+<li>If Stroke -&gt; Pass original image -&gt; Model B -&gt; Return Type (Ischemic/Haemorrhagic).</li>
+</ul>
+<hr />
+<h2>4. System Architecture &amp; Flows</h2>
+<h3>4.1 Technology Stack</h3>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Technologies</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Frontend</strong></td>
+<td>React, Vite, TailwindCSS, Framer Motion, Lucide Icons</td>
+</tr>
+<tr>
+<td><strong>Backend</strong></td>
+<td>Python, FastAPI, Uvicorn</td>
+</tr>
+<tr>
+<td><strong>Database</strong></td>
+<td>MongoDB (Data), Beanie (ODM)</td>
+</tr>
+<tr>
+<td><strong>AI/ML</strong></td>
+<td>TensorFlow/Keras (Vision), Google Gemini 2.0 (GenAI)</td>
+</tr>
+<tr>
+<td><strong>Auth</strong></td>
+<td>JWT (JSON Web Tokens), Passlib (Bcrypt)</td>
+</tr>
+</tbody>
+</table>
+<h3>4.2 Application Flow</h3>
+<pre><code class="language-mermaid">graph TD
+    User[User] --&gt;|Uploads Image| Frontend[React Frontend]
+    Frontend --&gt;|POST /predict| API[FastAPI Backend]
+
+    subgraph &quot;Backend Processing&quot;
+        API --&gt;|Validate Token| Auth[Auth Middleware]
+        API --&gt;|Check Image| Heuristic[Is Brain CT?]
+
+        Heuristic -- No --&gt; Error[Return Error]
+        Heuristic -- Yes --&gt; ModelA[Model A: Screening]
+
+        ModelA -- Normal --&gt; ResultNormal[Result: Normal]
+        ModelA -- Stroke --&gt; ModelB[Model B: Type Class]
+
+        ModelB --&gt; ResultType[Result: Ischemic/Haemorrhagic]
+
+        ResultNormal &amp; ResultType --&gt; GenAI[Gemini 2.0]
+        GenAI --&gt;|Generate Plan| Advice[Rehab Advice]
+
+        Advice --&gt; DB[(MongoDB History)]
+    end
+
+    DB --&gt; Response[JSON Response]
+    Response --&gt; Frontend
+</code></pre>
+<h3>4.3 Chatbot Flow (Context-Aware)</h3>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant User
+    participant ChatbotUI
+    participant Backend
+    participant DB
+    participant Gemini
+
+    User-&gt;&gt;ChatbotUI: &quot;How is my recovery?&quot;
+    ChatbotUI-&gt;&gt;Backend: POST /chatbot/ask (msg, token)
+    Backend-&gt;&gt;DB: Fetch last 5 Scans
+    DB--&gt;&gt;Backend: [Scan1: Normal, Scan2: Ischemic...]
+    Backend-&gt;&gt;Gemini: Prompt + User Query + Scan History
+    Gemini--&gt;&gt;Backend: Context-Aware Medical Advice
+    Backend--&gt;&gt;ChatbotUI: Response
+    ChatbotUI--&gt;&gt;User: Display Message
+</code></pre>
+<hr />
+<h2>5. Implementation Guide</h2>
+<h3>5.1 Backend Setup</h3>
+<ol>
+<li><strong>Initialize Project:</strong>
+   <code>bash
+   python -m venv venv
+   source venv/bin/activate
+   pip install -r requirements.txt</code></li>
+<li><strong>Environment Variables (<code>.env</code>):</strong></li>
+<li><code>JWT_SECRET</code>: For secure auth.</li>
+<li><code>GEMINI_API_KEY</code>: For chatbot features.</li>
+<li><code>MONGO_URL</code>: Database connection.</li>
+<li><strong>Training:</strong></li>
+<li>Run <code>python scripts/prepare_datasets.py</code> to organize data.</li>
+<li>Run <code>python scripts/train_model_a.py</code> and <code>train_model_b.py</code>.</li>
+</ol>
+<h3>5.2 Frontend Setup</h3>
+<ol>
+<li><strong>Install Dependencies:</strong>
+   <code>bash
+   cd apps/web
+   npm install</code></li>
+<li><strong>Run Dev Server:</strong>
+   <code>bash
+   npm run dev</code></li>
+</ol>
+<h3>5.3 Key Features Implementation</h3>
+<ul>
+<li><strong>JWT Auth:</strong> Implemented in <code>routers/auth.py</code> using <code>OAuth2PasswordBearer</code>.</li>
+<li><strong>History:</strong> Stored in MongoDB <code>scan_records</code> collection, linked by <code>user_id</code>.</li>
+<li><strong>GenAI:</strong> Uses <code>google.generativeai</code> SDK with <code>gemini-flash-latest</code> model for speed and accuracy.</li>
+</ul>
+<hr />
+<h2>6. Future Roadmap</h2>
+<ul>
+<li>[ ] <strong>DICOM Support:</strong> Native handling of medical <code>.dcm</code> files.</li>
+<li>[ ] <strong>Doctor Portal:</strong> Separate login for doctors to review patient scans.</li>
+<li>[ ] <strong>Real-time Notifications:</strong> Email alerts for high-risk detections.</li>
+</ul>
+    </body>
+    </html>
+    

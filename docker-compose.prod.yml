@@ -1,0 +1,49 @@
+version: '3.8'
+
+# Production Docker Compose Configuration
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
+# This file overrides development settings with production-appropriate values
+
+services:
+  mongodb:
+    restart: always
+    volumes:
+      - mongodb_data:/data/db
+      - ./backups:/backups
+    environment:
+      # Use strong credentials in production
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-change_me_in_production}
+    healthcheck:
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  backend:
+    restart: always
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+    # Production environment
+    environment:
+      ENVIRONMENT: production
+      API_RELOAD: "false"
+    command: uvicorn apps.api.main:app --host 0.0.0.0 --port 8000 --workers 4
+
+  frontend:
+    restart: always
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M

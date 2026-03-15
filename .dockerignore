@@ -1,0 +1,86 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+venv_*/
+*.egg-info/
+dist/
+build/
+*.pyc
+*.pyo
+
+# Testing
+.pytest_cache/
+.coverage
+.pytest_cache
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+.env.local
+*.log
+
+# Git
+.git/
+.gitignore
+.github/
+.gitattributes
+
+# LARGE DATASET DIRECTORIES (Major culprits!)
+Brain_Stroke_CT_Dataset/
+brain_stroke_ct_dataset/
+brain_stroke_ct_dataset.zip
+dataset/
+datasets/
+data/
+images/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tiff
+
+# LARGE MODEL FILES
+# *.h5 (Removed to include trained model in image)
+*.pt
+*.pth
+*.model
+*.weights
+*.bin
+*.pkl
+*.pickle
+*.npy
+*.npz
+
+# Backups
+*.backup/
+*.bak
+*.tar
+*.tar.gz
+*.zip
+backups/
+
+# Project-specific directories to exclude
+mega-project/
+final_dataset/
+final_dataset_augmented/
+final_dataset_v2/
+frontend/
+node_modules/
+
+# Development files
+npm-debug.log
+yarn-error.log
+.env
+.env.local
+.env.*.local
