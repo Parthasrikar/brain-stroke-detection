@@ -1,13 +1,9 @@
 import axios from 'axios';
 
 // Use nginx proxy path instead of direct port
-// Use nginx proxy path (/api) in production/Docker, or direct port in local dev
-export const BASE_URL = typeof window !== 'undefined' && (
-    window.location.hostname !== 'localhost' || 
-    window.location.port === '80' || 
-    window.location.port === ''
-) 
-    ? window.location.origin + '/api' 
+// Direct link to your Railway backend
+export const BASE_URL = typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+    ? 'https://brain-stroke-detection-production.up.railway.app' 
     : 'http://localhost:8000';
 
 const api = axios.create({
