@@ -2,10 +2,12 @@
 __pycache__/
 *.py[cod]
 *$py.class
-venv/
-.venv/
-env/
+venv*/
+.venv*/
+env*/
 .env
+.env.*
+!apps/ai/models/stroke_model_resnet50_ensemble.h5
 build/
 develop-eggs/
 dist/

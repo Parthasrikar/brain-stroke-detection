@@ -1,6 +1,0 @@
-#!/Users/gparthasrikar/Documents/m-project/apps/api/venv_3.12/bin/python3.12
-import sys
-from beanie.executors.migrate import migrations
-if __name__ == '__main__':
-    sys.argv[0] = sys.argv[0].removesuffix('.exe')
-    sys.exit(migrations())
