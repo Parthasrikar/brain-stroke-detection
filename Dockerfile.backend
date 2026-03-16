@@ -3,12 +3,10 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
-    gcc \
+RUN apt-get update && apt-get install -y gcc \
     && rm -rf /var/lib/apt/lists/*
 
 COPY apps/api/requirements.txt .
-
 RUN pip install --no-cache-dir --default-timeout=1000 -r requirements.txt
 
 COPY apps/api/*.py ./apps/api/
@@ -23,10 +21,12 @@ COPY apps/ai/models/stroke_model_resnet50_ensemble.h5 ./apps/ai/models/
 
 RUN touch /app/apps/__init__.py
 
-# Railway default port
+# Railway uses dynamic port
 EXPOSE 8080
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+# Healthcheck uses the same dynamic port
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
 CMD python -c "import requests,os; requests.get(f'http://localhost:{os.environ.get(\"PORT\",8080)}/health')"
 
-CMD ["sh", "-c", "uvicorn apps.api.main:app --host 0.0.0.0 --port $PORT"]
+# Start FastAPI using Railway's PORT
+CMD ["sh", "-c", "uvicorn apps.api.main:app --host 0.0.0.0 --port ${PORT:-8080}"]
