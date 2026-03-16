@@ -11,19 +11,49 @@ from apps.api.models.user import User
 from apps.api.models.scan_record import ScanRecord
 from apps.api.routers import auth, prediction, chatbot
 
-# Database Config (Load from environment for Docker compatibility)
-MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
-DB_NAME = os.getenv("DB_NAME", "brain_stroke_db")
+
+# ===============================
+# Database Configuration
+# ===============================
+
+MONGO_URL = os.environ["MONGO_URL"]
+DB_NAME = os.getenv("DB_NAME", "brain")
+
+
+# ===============================
+# Application Lifespan
+# ===============================
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
-    client = AsyncIOMotorClient(MONGO_URL)
-    await init_beanie(database=client[DB_NAME], document_models=[User, ScanRecord])
-    print("Database connected.")
+    print("Starting application...")
+    print("Connecting to MongoDB...")
+
+    try:
+        client = AsyncIOMotorClient(
+            MONGO_URL,
+            serverSelectionTimeoutMS=30000,
+            connectTimeoutMS=30000,
+            socketTimeoutMS=30000
+        )
+
+        await init_beanie(
+            database=client[DB_NAME],
+            document_models=[User, ScanRecord]
+        )
+
+        print("MongoDB connected successfully.")
+
+    except Exception as e:
+        print("MongoDB connection error:", e)
+
     yield
-    # Shutdown
-    pass
+    print("Application shutdown.")
+
+
+# ===============================
+# FastAPI App
+# ===============================
 
 app = FastAPI(
     title="Brain Stroke Detection API",
@@ -32,10 +62,14 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS Setup (Configurable for different environments)
+
+# ===============================
+# CORS Configuration
+# ===============================
+
 origins = os.getenv(
     "CORS_ORIGINS",
-    "http://localhost:5173,http://localhost:3000,http://localhost:80"
+    "http://localhost:5173,http://localhost:3000,http://localhost:80,https://frontend-production-8d4a.up.railway.app"
 ).split(",")
 
 app.add_middleware(
@@ -46,18 +80,48 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+# ===============================
+# Routers
+# ===============================
+
 app.include_router(auth.router)
 app.include_router(prediction.router)
 app.include_router(chatbot.router)
 
-# Mount static uploads folder
+
+# ===============================
+# Static Upload Folder
+# ===============================
+
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
+
+# ===============================
+# Routes
+# ===============================
 
 @app.get("/")
 async def root():
     return {"message": "Welcome to Brain Stroke Detection API. Models loaded."}
 
+
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
+
+# ===============================
+# Local Development Run
+# ===============================
+
 if __name__ == "__main__":
-    uvicorn.run("apps.api.main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(
+        "apps.api.main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True
+    )
