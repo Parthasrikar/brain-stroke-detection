@@ -111,10 +111,10 @@ def validate_mri(image_bytes: bytes) -> tuple:
         h, s, v = hsv_image.split()
         avg_saturation = np.mean(np.array(s))
         
-        # MRI images are grayscale (low saturation)
-        # Threshold: 0-255, normal for color images ~100+, MRI ~30-50
-        if avg_saturation > 100:
-            return False, "❌ Image appears to be a color photograph, not a medical scan."
+        # MRI images are strictly grayscale (very low saturation)
+        # Threshold: 0-255. Colored/Artistic/Generated scans usually > 50.
+        if avg_saturation > 40:
+            return False, "❌ Image appears to be a colorized or stylized illustration, not a raw medical scan."
         
         # ========== CHECK 4: Contrast Levels ==========
         rgb_array = np.array(image)
