@@ -1,17 +1,20 @@
 fastapi>=0.100.0
 uvicorn>=0.23.0
-motor>=3.3.0
-beanie>=1.19.0
+motor==3.3.2
+beanie==1.25.0
+pymongo==4.6.2
 tensorflow-cpu
 tensorflow-hub>=0.16.0
 numpy>=1.24.0,<2.0.0
 pillow>=10.0.0
 python-multipart>=0.0.6
+pydantic[email]==2.6.4
 pydantic-settings>=2.0.0
 python-jose[cryptography]>=3.3.0
 passlib[argon2]>=1.7.4
 argon2-cffi>=23.1.0
 argon2-cffi-bindings
+
 
 pytest>=7.4.0
 httpx>=0.24.0

@@ -37,16 +37,14 @@ async def lifespan(app: FastAPI):
             socketTimeoutMS=30000
         )
 
-        # Explicitly get the database object using the get_database method
-        # This resolves "MotorDatabase is not callable" errors in some environments/versions
-        db = client.get_database(DB_NAME)
-
+        # Confirm DB connection and initialize Beanie
+        # With motor 3.3.2 and beanie 1.25.0, this is the most stable pattern
         await init_beanie(
-            database=db,
+            database=client[DB_NAME],
             document_models=[User, ScanRecord]
         )
 
-        print(f"MongoDB connected successfully to database: {DB_NAME}")
+        print(f"✅ MongoDB connected successfully to database: {DB_NAME}")
 
     except Exception as e:
         print("MongoDB connection error:", e)
