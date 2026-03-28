@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from typing import Optional, List
 import os
 import logging
+import traceback
 from dotenv import load_dotenv
 from apps.api.models.user import User
 
@@ -132,8 +133,8 @@ async def register(user_data: UserRegister):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Registration error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Registration failed")
+        logger.error(f"Registration error detailed: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
 
 @router.post("/login", response_model=Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
@@ -167,8 +168,8 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Login error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Login failed")
+        logger.error(f"Login error detailed: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Login failed: {str(e)}")
 
 @router.get("/me", response_model=UserOut)
 async def get_me(current_user: User = Depends(get_current_user)):
