@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 import os
 from dotenv import load_dotenv
 from typing import Optional, List
@@ -15,18 +16,10 @@ router = APIRouter(prefix="/chatbot", tags=["Chatbot"])
 # Configure Gemini
 api_key = os.getenv("GEMINI_API_KEY")
 if api_key:
-    genai.configure(api_key=api_key)
-    # Using 'gemini-flash-latest' which is verified as working in this environment
-    model = genai.GenerativeModel(
-        model_name='gemini-flash-latest',
-        generation_config={
-            "temperature": 0.7,
-            "top_p": 1,
-            "top_k": 1,
-            "max_output_tokens": 1024,
-        }
-    )
+    client = genai.Client(api_key=api_key)
+    model = 'gemini-2.5-flash'
 else:
+    client = None
     model = None
 
 class ChatMessage(BaseModel):
@@ -84,7 +77,16 @@ async def ask_chatbot(request: ChatRequest, current_user: User = Depends(get_cur
             f"4. ALWAYS state: 'I am an AI assistant. Please consult your physician for final medical decisions.'\n"
         )
         
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model=model,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                temperature=0.7,
+                top_p=1.0,
+                top_k=1,
+                max_output_tokens=1024,
+            )
+        )
         return {"response": response.text}
 
     except Exception as e:

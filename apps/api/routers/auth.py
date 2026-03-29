@@ -168,7 +168,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Login error detailed: {traceback.format_exc()}")
+        logger.error(f"Login error: {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Login failed: {str(e)}")
 
 @router.get("/me", response_model=UserOut)

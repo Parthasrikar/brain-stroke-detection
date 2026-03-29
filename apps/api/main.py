@@ -39,15 +39,18 @@ async def lifespan(app: FastAPI):
 
         # Confirm DB connection and initialize Beanie
         # With motor 3.3.2 and beanie 1.25.0, this is the most stable pattern
+        db = client[DB_NAME]
         await init_beanie(
-            database=client[DB_NAME],
+            database=db,
             document_models=[User, ScanRecord]
         )
 
         print(f"✅ MongoDB connected successfully to database: {DB_NAME}")
 
     except Exception as e:
-        print("MongoDB connection error:", e)
+        print("MongoDB connection error:", str(e))
+        import traceback
+        traceback.print_exc()
 
     yield
     print("Application shutdown.")

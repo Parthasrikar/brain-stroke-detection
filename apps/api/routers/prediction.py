@@ -13,7 +13,7 @@ from typing import List, Optional
 import os
 import logging
 from datetime import datetime
-import google.generativeai as genai
+import google.genai as genai
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -24,9 +24,10 @@ logger = logging.getLogger(__name__)
 # Gemini setup for automated suggestions
 api_key = os.getenv("GEMINI_API_KEY")
 if api_key:
-    genai.configure(api_key=api_key)
-    gemini_model = genai.GenerativeModel('gemini-2.0-flash')
+    gemini_client = genai.Client(api_key=api_key)
+    gemini_model = 'gemini-1.5-flash'
 else:
+    gemini_client = None
     gemini_model = None
     logger.warning("GEMINI_API_KEY not set. AI-generated suggestions disabled.")
 
@@ -106,7 +107,10 @@ async def predict_stroke(
                 Keep response brief and practical.
                 """
                 
-                response = gemini_model.generate_content(prompt)
+                response = gemini_client.models.generate_content(
+                    model=gemini_model,
+                    contents=prompt
+                )
                 suggestion = response.text
                 
             except Exception as e:
